@@ -1,10 +1,9 @@
 const { Pool } = require("pg");
 require("dotenv").config();
 
-// PostgreSQL connection pool with SSL certificate
 const pool = new Pool({
   host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT),
+  port: parseInt(process.env.DB_PORT || "5432"),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
@@ -37,22 +36,15 @@ tgrnSgmFQdoVswYz9MaAiXz92shty8K2/rJYrvMiTo9JcjzN7nuF44Zf+0XyrGzT
 6Jjbrg==
 -----END CERTIFICATE-----`,
   },
+  max: 3,                     // safe for Vercel/serverless
+  idleTimeoutMillis: 20000,   // close idle sockets
+  connectionTimeoutMillis: 8000,
 });
 
-// Connection error handler
+// ✅ DO NOT kill serverless with process.exit
 pool.on("error", (err) => {
-  console.error("🔥 Unexpected DB Pool Error:", err);
-  process.exit(-1);
+  console.error("🔥 PG Pool Error (safe caught):", err.message);
 });
 
-// Optional: Test DB connection on startup
-(async () => {
-  try {
-    const res = await pool.query("SELECT VERSION()");
-    console.log("✅ Connected to PostgreSQL:", res.rows[0].version);
-  } catch (err) {
-    console.error("❌ Database Connection Failed:", err.message);
-  }
-})();
-
+// ✅ Export cleanly with no auto-run query (avoids deploy crash)
 module.exports = pool;
