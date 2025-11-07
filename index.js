@@ -17,8 +17,6 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ❌ REMOVED STATIC FILE SERVING (not serverless friendly)
-
 // ───────────────────────────────────────────
 // 🚀 ROUTE IMPORTS
 // ───────────────────────────────────────────
@@ -118,7 +116,7 @@ app.use("/api/student-ay", studentAyRoutes);
 app.use("/api/fin-master-student", finMasterStudent);
 
 // ───────────────────────────────────────────
-// ❤️ HEALTH CHECK + DB TEST (on request only)
+// ❤️ HEALTH CHECK + DB TEST
 // ───────────────────────────────────────────
 app.get("/", async (_, res) => {
   try {
@@ -126,7 +124,7 @@ app.get("/", async (_, res) => {
     res.json({
       status: "Serverless vibing ✨",
       db_time: rows[0].now,
-      message: "Ancient code, future infrastructure."
+      message: "Old code. New era. No fear."
     });
   } catch (err) {
     res.status(500).json({
@@ -137,7 +135,7 @@ app.get("/", async (_, res) => {
 });
 
 // ───────────────────────────────────────────
-// ⚡ Eksport Express as Serverless Function
+// ⚡ Serverless Export
 // ───────────────────────────────────────────
 const serverless = require("serverless-http");
 module.exports = serverless(app);
