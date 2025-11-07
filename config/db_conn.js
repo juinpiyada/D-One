@@ -1,48 +1,50 @@
 const { Pool } = require("pg");
 require("dotenv").config();
 
-// PostgreSQL connection pool with SSL certificate
+// SSL Cert (from the sacred second block ✨)
+const sslConfig = {
+  rejectUnauthorized: true,
+  ca: `-----BEGIN CERTIFICATE-----
+MIIEUDCCArigAwIBAgIUfx+mFjZ7SJ5D9UY2wivkY32TQeowDQYJKoZIhvcNAQEM
+BQAwQDE+MDwGA1UEAww1YjY4MDNkNzEtYjkyMy00NWU3LWIxN2MtYTM4ZDAxM2Vi
+ZGE1IEdFTiAxIFByb2plY3QgQ0EwHhcNMjUwNzE2MTUxMzMyWhcNMzUwNzE0MTUx
+MzMyWjBAMT4wPAYDVQQDDDViNjgwM2Q3MS1iOTIzLTQ1ZTctYjE3Yy1hMzhkMDEz
+ZWJkYTUgR0VOIDEgUHJvamVjdCBDQTCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCC
+AYoCggGBAIZMIiPzA22biTphMFYKTWLmfbeldGy8l5iyahPJJFY53sr9POpVP1Wg
+trS5QyAIqm1tCH2jTIewAKGgcPOa5cHJFZGTo46c+1d7841AcdP1BbJ89Mg0U/J8
+VnyqJt5v845rbVIgl4Ghla5n6SGE2Uyg0yGJLRiXJLInSdF8ejNMXAGg0NTHzlGW
+cpuWrsa56l8nNMoQh3oTmtzvlVvgnLvdbwOkv4oGYPj9CWaXQ8ZlR5z5AoKyH/yQ
+Pluy6FE0h7Crsy9FtimrEQE9RuMFQFAlIRNgfSGKNjEYn/QxYsf3FoQp0uqabMas
+EP1xJwr8qIDkT2TRdHIjBcNhgMO8YfXvkgJ/AdrRzGDfidfVsjX2w7rCK+cQDkGJ
+Gzeh2IdxBJAd4u8qNCTr3FN2ggv1Taf/iJDRwDRfDCzrgvi+HtCPrvFVPX+AD9po
+CFJc/8kHGX9hdyOecfHJDkPxe4BEFxbCfdLA0SR/NIUwM1pBwmq2T2AbGGaYIc+A
+MCBRc7Vo0QIDAQABo0IwQDAdBgNVHQ4EFgQUP1V5R1hsevDbLaMb0hlj7jJtJ7Mw
+EgYDVR0TAQH/BAgwBgEB/wIBADALBgNVHQ8EBAMCAQYwDQYJKoZIhvcNAQEMBQAD
+ggGBAEzjh7RjcN63BnJxSoRBxY+ugd6+KWshb+4t9izgPrlJ/qMWekbEvOx8qtYR
+FGm9PwUUsNnjnuf0zyigjwJgcX5yS40wbsQ2t3ZGDD2MoQQTTsQVnbp7Ynahpjuz
+8OD+pxkbuShN8G7Bzr6AhNmqbb220kt326Aae2mW0H24Y2BOqj3VB8t06+kp+82V
+Zo2Q5G097I94pCZ8ZvkH1Lcdt9yJZFAPe2SzSPN8txJd5UiNMmBok2hpEwyBhOd6
+uA8wswsXmL7VMqzvKeHM1/ZxmPKSN5H44gVqsFkptLzKTggEzLc8uVdbEWzARm4s
+MWcsBiXBWUUhoFkYtG1u1MroP1rTJZ1MqJNRapdx6Mv1TVV6VydlzBxVH07bZW/Z
+Az5BT6/GESHojXivhI+5LqMoFMRNoH52ZD1UB88y3Sv60YKofICOkehckfEvqC0y
+citumPU3BjznfkqlNJHv+Y7dHhVoBtr/v3Esz1I5Y08W7Buq1b3sA2crR5dJDxt6
+23QfoA==
+-----END CERTIFICATE-----`,
+};
+
 const pool = new Pool({
   host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT),
+  port: parseInt(process.env.DB_PORT || "5432"),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  ssl: {
-    rejectUnauthorized: true,
-    ca: `-----BEGIN CERTIFICATE-----
-MIIEUDCCArigAwIBAgIUHcLTp4XBlronfHosVErLLetlb3QwDQYJKoZIhvcNAQEM
-BQAwQDE+MDwGA1UEAww1NzY5ODE0NmEtZmY3Ni00NzRlLTkyYmUtNjA1NDA3YmU4
-ZjllIEdFTiAxIFByb2plY3QgQ0EwHhcNMjUxMTA3MTEyOTI0WhcNMzUxMTA1MTEy
-OTI0WjBAMT4wPAYDVQQDDDU3Njk4MTQ2YS1mZjc2LTQ3NGUtOTJiZS02MDU0MDdi
-ZThmOWUgR0VOIDEgUHJvamVjdCBDQTCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCC
-AYoCggGBAI2+Y91VVcxzZHIAFpgzHrQXj1GIMhVDG+vaTsYOYu2WQI0jiGYus4E+
-ngF8xCpjr+uVrXdL9wbVLxqYPMVGT2+0AoyCiJh0sKBwdqr+g6LiluCzd+mP+ACZ
-oqItmq730kCIuT1v2twmIA5+4pQ5jFau4nqezU3aKKs7AY0mw5Yf8POvMOcwl2wS
-BH06xn9ibBiwYMgcth+or5sdK8F6o2h/CHnjcE13jAdLF5zZEoh78innVYrL3A0y
-K3j0EiRQs38QpJpCCqFO/lbmjHN7HkfkzC10h78v5Atk4Job8Wh7T+ovmD4upmA0
-YqKeAgqbkcl5okv9y6O78Ueg7mDw37bGlj4aynTKZwkRbvpMN/kHoaEc1RsKsqgM
-34E+dT2bSYL+v177WNBJW5dX51IWn9FteE4qR7vACE2gi0wAmnVRFadUVaQG2uEY
-EuWEHG2gQiDrG7SjYNIDKmkcr56erA7Ej1xOgq2lu3femLmwzVJLG8rdFyf/XUWP
-buYuZUuUcQIDAQABo0IwQDAdBgNVHQ4EFgQU9C4EytyIrX42egayQvpvRTHv1ngw
-EgYDVR0TAQH/BAgwBgEB/wIBADALBgNVHQ8EBAMCAQYwDQYJKoZIhvcNAQEMBQAD
-ggGBAAabz2Lxum/0xf4KUyAGYEFs5nwV7D8thsYBNjBcoMcNYeZ0il/F74zvwCOO
-eozocEmb7bfr9EQQTxoKs5hFZI2ssfX1cIX0RCiUPvUNTSqcYCM8DwywEtJgTOAy
-o3XplsqRrnjcEAF6vs7Z7DGXpEwyCuZwsgW81K4A5u3D8aDl71vxPP7NQ/pPx1bc
-oAPw617tvCOdGYQf9rOZzD6gN3S/3NFF0bDtX+ystr3AVzCLvBJqMZCkA7vB63gZ
-2juJs3Mj6GEXcL4trst+hFERYdVL6pr3bPFxKqBBKUUQWvRgWnwHpTMAPWP18GjI
-BR0k0CIqCvu2829FKStb56cjRv38BaKg7O0sosZvqKoiR4GIbmmxPGc+1+ijn6jh
-zqcCT66ePU4LhiFm4kbDHjxKSx4nHO+ONgH1a5RksVGmpBz5Kdfell0rImkFk0IY
-tgrnSgmFQdoVswYz9MaAiXz92shty8K2/rJYrvMiTo9JcjzN7nuF44Zf+0XyrGzT
-6Jjbrg==
------END CERTIFICATE-----`,
-  },
+  ssl: sslConfig,
 });
 
-// ❗ FIX: Removed process.exit and startup DB call
+// Vercel-safe: no exit(), just vibes and logs
 pool.on("error", (err) => {
-  console.error("🔥 Database pool error (Vercel-safe):", err.message);
+  console.error("🔥 DB Pool Error (vibes still intact):", err.message);
 });
 
-// ✅ Export only pool, no auto connection test
+// Export like the prophecies intended
 module.exports = pool;
